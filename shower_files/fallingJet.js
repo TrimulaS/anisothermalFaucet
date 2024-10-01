@@ -1,14 +1,14 @@
 class fallingJet {
         constructor(container, size = 100) {
                 // Константы
-    const speed = 20; // скорость движения вниз в пикселях/секунду
-    const minHeight = 10;
-    const maxHeight = 50;
-    const minGap = 2;
-    const maxGap = 10;
-    const minLevel = 20;
-    const maxLevel = 200;
-    const rectWidth = 50; // ширина прямоугольника
+        this.speed = 20; // скорость движения вниз в пикселях/секунду
+        this.minHeight = 10;
+        this.maxHeight = 50;
+        this.minGap = 2;
+        this.maxGap = 10;
+        this.minLevel = 20;
+        this.maxLevel = 200;
+        this.rectWidth = 50; // ширина прямоугольника
 
             
         this.size = size;
