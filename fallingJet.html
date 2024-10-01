@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moving Rectangles</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+
+<input type="checkbox" id="startAnimation"> Start Animation
+<canvas id="myCanvas" width="400" height="240"></canvas>
+
+<script>
+    const canvas = document.getElementById('myCanvas');
+    const ctx = canvas.getContext('2d');
+    const checkbox = document.getElementById('startAnimation');
+
+    let isAnimating = false;
+    let rectangles = [];
+
+    // Константы
+    const speed = 5; // скорость движения вниз в пикселях/секунду
+    const minHeight = 10;
+    const maxHeight = 50;
+    const minGap = 2;
+    const maxGap = 10;
+    const minLevel = 20;
+    const maxLevel = 200;
+    const rectWidth = 50; // ширина прямоугольника
+
+    // Функция создания нового прямоугольника
+    function createRectangle() {
+        const height = Math.floor(Math.random() * (maxHeight - minHeight + 1)) + minHeight;
+        const gap = Math.floor(Math.random() * (maxGap - minGap + 1)) + minGap;
+        const lastY = rectangles.length > 0 ? rectangles[rectangles.length - 1].y + rectangles[rectangles.length - 1].height + gap : minLevel;
+
+        // Если последний прямоугольник находится слишком близко к границе, не добавляем новый
+        if (lastY < maxLevel) {
+            rectangles.push({
+                x: Math.random() * (canvas.width - rectWidth), // случайное x положение
+                y: lastY,
+                width: rectWidth,
+                height: height
+            });
+        }
+    }
+
+    // Функция для обновления позиции прямоугольников
+    function updateRectangles() {
+        // Движение прямоугольников вниз
+        rectangles.forEach(rect => {
+            rect.y += speed / 60; // Движение со скоростью 5px/сек
+        });
+
+        // Удаляем прямоугольники, которые вышли за пределы
+        rectangles = rectangles.filter(rect => rect.y < maxLevel);
+
+        // Создаем новый прямоугольник если последний еще не вышел за пределы
+        if (rectangles.length === 0 || rectangles[rectangles.length - 1].y + rectangles[rectangles.length - 1].height + minGap < maxLevel) {
+            createRectangle();
+        }
+    }
+
+    // Функция рисования прямоугольников
+    function drawRectangles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Очищаем canvas
+
+        // Рисуем каждый прямоугольник
+        rectangles.forEach(rect => {
+            if (rect.y + rect.height > minLevel && rect.y < maxLevel) {
+                // Прямоугольник попадает в область 20..200
+                const visibleY = Math.max(minLevel, rect.y);
+                const visibleHeight = Math.min(maxLevel, rect.y + rect.height) - visibleY;
+                ctx.fillStyle = 'blue';
+                ctx.fillRect(rect.x, visibleY, rect.width, visibleHeight);
+            }
+        });
+    }
+
+    // Функция для анимации
+    function animate() {
+        if (isAnimating) {
+            updateRectangles();
+            drawRectangles();
+            requestAnimationFrame(animate); // Запуск следующего кадра анимации
+        }
+    }
+
+    // Обработчик для чекбокса
+    checkbox.addEventListener('change', (e) => {
+        isAnimating = e.target.checked;
+        if (isAnimating) {
+            rectangles = []; // Очистить существующие прямоугольники
+            createRectangle(); // Создать первый прямоугольник
+            animate(); // Запустить анимацию
+        }
+    });
+
+</script>
+
+</body>
+</html>

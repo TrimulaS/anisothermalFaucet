@@ -11,10 +11,15 @@
     </style>
 </head>
 <body>
-
+<div id="angle">0</div>
+<div id="angleAdopted">0</div>
 <canvas id="myCanvas" width="400" height="400"></canvas>
 
 <script>
+    const angleDiv = document.getElementById('angle');
+    const angleAdoptedDiv = document.getElementById('angleAdopted');
+
+    
     const canvas = document.getElementById('myCanvas');
     const ctx = canvas.getContext('2d');
 
@@ -58,7 +63,7 @@
         // Draw the small circle at the top of the line
         ctx.beginPath();
         ctx.arc(endX, endY, circleRadius, 0, 2 * Math.PI);
-        ctx.fillStyle = 'black';
+        ctx.fillStyle = 'orange';
         ctx.fill();
     }
 
@@ -99,9 +104,13 @@
             const dy = baseY - mouseY;
             angle = Math.atan2(dy, dx);
 
+            angleDiv.innerHTML = '<b>' + angle + '</b>';
+
             // Constrain the angle between 0 and Math.PI (0 to 180 degrees)
-            if (angle < 0) angle = 0;
-            if (angle > Math.PI) angle = Math.PI;
+            if (angle < 0 && angle >-1) angle = 0;
+            if (angle < -1) angle = Math.PI;
+            
+            angleAdoptedDiv.innerHTML = '<b>' + angle + '</b>';
 
             updateColor();
             drawLineWithCircle();
