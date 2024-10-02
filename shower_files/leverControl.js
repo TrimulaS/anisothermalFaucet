@@ -1,11 +1,25 @@
-/*
-mouseDrag -> angle
-Wheell
-setValue()
+/**
+* mouseDrag -> angle
+* Wheell
+* setValue()
+*   
+*   setAngle()
+*      setValue()
+*         draw()
 */
 
 class LeverControl {
-    #value;
+    static #scrollDelta = 2;   // in degrees
+    static #counter = 0;
+    #id = -1;
+    
+    #value = 0.0; // Initial value from 0.0 to 1.0
+    #angle = 3.14; // initial angle (in radians)
+    #onMouseMoveHandler;
+    #onMouseUpHandler;
+    #onMouseLeaveHandler;
+    
+
     constructor(container, size = 150) {
         this.size = size;
         this.container = container;
@@ -16,52 +30,43 @@ class LeverControl {
         //Handle
         this.lineLength = this.size / 2.5;
         this.circleRadius = this.size / 15;    // handle circle
-        
         this.x0 = this.size / 2;
         this.y0 = this.size / 2;
-        this.angle = 3.14; // initial angle (in radians)
         this.dragging = false;
-        this.#value = 0.0; // Initial value from 0.0 to 1.0
         this.listeners = [];
+
+        this.#onMouseMoveHandler = this.#onMouseMove.bind(this);  // сохраняем привязанные функции
+        this.#onMouseUpHandler = this.#onMouseUp.bind(this);
+        this.#onMouseLeaveHandler = this.#onMouseLeave.bind(this);
+
+        LeverControl.#counter++;
+        this.#id = LeverControl.#counter;
         
 
         this.init();
     }
 
-    init() {
-        this.container.appendChild(this.canvas);
-        this.calcAndDraw();
+   #onMouseDown(e) {
 
-        // Mouse event listeners
-        this.canvas.addEventListener('mousedown', this.#onMouseDown.bind(this));
-        this.canvas.addEventListener('wheel', this.#onMouseWheel.bind(this));
-    }
-
-    // // To input externally   (!)  should compy with calcAndDraw(angle) accordingly
-    // setValue(value){
-    //     this.angle = (value - 1) / Math.PI;
-    // }
-
-
-
-    #onMouseDown(e) {
-        document.addEventListener('mousemove', this.#onMouseMove.bind(this));
-        document.addEventListener('mouseup', this.#onMouseUp.bind(this)); // отслеживание на уровне документа
-        document.addEventListener('mouseleave', this.#onMouseLeave.bind(this));
 
         
-        const { x0: baseX, y0: baseY, lineLength, circleRadius, angle } = this;
+        const { x0, y0, lineLength, circleRadius } = this;
         const rect = this.canvas.getBoundingClientRect();
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
 
-        const endX = baseX + lineLength * Math.cos(angle);
-        const endY = baseY - lineLength * Math.sin(angle);
+        const endX = x0 + lineLength * Math.cos(this.#angle);
+        const endY = y0 - lineLength * Math.sin(this.#angle);
 
         // Check if the mouse is within the small circle at the top of the line
         const distance = Math.sqrt((mouseX - endX) ** 2 + (mouseY - endY) ** 2);
         if (distance <= circleRadius) {
             this.dragging = true;
+            // console.log("strat dragging");
+
+            document.addEventListener('mousemove', this.#onMouseMove.bind(this));
+            document.addEventListener('mouseup', this.#onMouseUp.bind(this)); // отслеживание на уровне документа
+            document.addEventListener('mouseleave', this.#onMouseLeave.bind(this));
         }
     }
 
@@ -75,51 +80,43 @@ class LeverControl {
             const lX = e.clientX - rect.left - x0;
             const lY = e.clientY - rect.top - y0;
 
-
-            // Certhesian: x to left, y to up. 
-            // Clockwise: 0 (0), π/2 (270), π -> -π (180), -π/2 (90), -0 -> 0 (0)
-            //this.theta = Math.round(  Math.atan2(lY, lX) * 180 / Math.PI  );
-            this.theta = Math.round(  Math.atan2(lY, lX) * 100  ) /100;
-            
-            // {e.clientX} : ${e.clientY}  - coordinates in web page
-            // client ( ${rect.left} : ${rect.top}   - coordinates of leverage graph
-            // local   L( ${lX} : ${lY} (related to leverage turn point)
-            
-            // console.log(`( ${e.clientX} : ${e.clientY} )  client ( ${rect.left} : ${rect.top} )` + 
+            // this.theta = Math.round(  Math.atan2(lY, lX) * 180 / Math.PI  );
+            // // //this.alpha = Math.atan2(e.clientY, e.clientX);
+            // // // {e.clientX} : ${e.clientY}  - coordinates in web page
+            // // // client ( ${rect.left} : ${rect.top}
+            // console.log(`( ${e.clientX} : ${e.clientY} )` +
             // `R ( ${mouseX} : ${mouseY} )     L( ${lX} : ${lY} )   angle: ${this.theta}     0(${x0} : ${y0})`);
 
             const dx = mouseX - x0;
             const dy = y0 - mouseY;
-            this.angle = Math.atan2(dy, dx);
 
-            // Constrain the angle between 0 and Math.PI (0 to 180 degrees)
-            if (this.angle < 0 && this.angle >-1)this.angle = 0;          
-            if (this.angle < -1) this.angle = Math.PI;                     
-
-            // // Constrain the angle between 0 and Math.PI (0 to 180 degrees)
-            // this.angle = Math.max(0, Math.min(this.angle, Math.PI));
-
-            this.calcAndDraw();
+            this.#setAngle( Math.atan2(dy, dx) );
         }
     }
+
+
 
     #onMouseWheel(e) {
         // Convert deltaY from the wheel event to an angle change in radians (2 degrees)
-        const angleChange = (2 * Math.PI) / 180;
+        const angleChange = (LeverControl.#scrollDelta * Math.PI) / 180;
         if (e.deltaY > 0) {
-            this.angle -= angleChange;
+            this.#angle -= angleChange;
         } else {
-            this.angle += angleChange;
+            this.#angle += angleChange;
         }
 
         // Constrain the angle between 0 and Math.PI (0 to 180 degrees)
-        this.angle = Math.max(0, Math.min(this.angle, Math.PI));
+        //this.#angle = Math.max(0, Math.min(this.#angle, Math.PI));
+        this.#setAngle(this.#angle);
 
         //this.value = this.angle / Math.PI; // Update value
-        this.calcAndDraw();
+
     }
 
     #onMouseUp() {
+        document.removeEventListener('mousemove', this.#onMouseMoveHandler);  // удаляем слушатели
+        document.removeEventListener('mouseup', this.#onMouseUpHandler);
+        document.removeEventListener('mouseleave', this.#onMouseLeaveHandler);
         this.dragging = false;
     }
 
@@ -127,6 +124,18 @@ class LeverControl {
         // Continue dragging even when the mouse leaves the canvas area
         // The dragging will only stop when the mouse is released (mouseup)
     }
+
+    
+    init() {
+        this.container.appendChild(this.canvas);
+        this.draw();
+
+        // Mouse event listeners
+        this.canvas.addEventListener('mousedown', this.#onMouseDown.bind(this));
+        this.canvas.addEventListener('wheel', this.#onMouseWheel.bind(this));
+    }
+
+ 
 
     // Returns the normalized value (0.0 to 1.0) representing the lever's position
     getValue() {
@@ -140,19 +149,7 @@ class LeverControl {
 
     // --------------------------------------------------Listener
 
-      // Метод для получения значения
-    getValue() {
-        return this.#value;
-    }
 
-    // Метод для установки значения и уведомления слушателей
-    setValue(newValue) {
-        if (this.#value !== newValue) {
-            this.#value = newValue;
-            this.notifyListeners();
-            this.calcAndDraw();
-        }
-    }
 
     // Метод для добавления слушателей
     addListener(listener) {
@@ -166,26 +163,73 @@ class LeverControl {
         this.listeners.forEach(listener => listener(this.#value));
     }
 
-    calcAndDraw() {
+    #setAngle(angle){
+        // if (this.#angle !== angle) {
+            
+            if(0 <= angle && angle <= Math.PI) {
+            this.#angle = angle
+            }
+            else if(-Math.PI/2 < angle && angle < 0  ) {
+                this.#angle = 0;
+            }
+            else 
+                this.#angle = Math.PI;
+            
+            // Calculate value
+            this.#setValueInternal(1 - this.#angle / Math.PI );
+            console.log(`${this.#id}   a ${angle}  >>  ${this.#angle}     val: ${this.#value}`);
+        // }
+        
+    }
 
-        const { ctx, x0: baseX, y0: baseY, lineLength, circleRadius, size, angle } = this;
+    // #angleToValue(angle){
+        
+    // }
+    // #valueToAngle(){
+    //     this.#value
+    // }
+    
+    // Метод для получения значения
+      getValue() {
+        return this.#value;
+    }
+    // Internal when angle alreay defined
+    #setValueInternal(newValue){ 
+        if (this.#value !== newValue) {
+            this.#value = newValue;
+            this.notifyListeners();
+            this.draw();
+        }
+        
+    }
+    
+    // Exteral  angle should calculated
+    setValue(newValue) {
+        //val is 0.0 .. 1.0
+        this.#setAngle( (1-newValue)*Math.PI );
+
+    }
+
+    draw() {
+
+        const { ctx, x0, y0, lineLength, circleRadius, size } = this;
 
         // Calculate value    (!)  should compy with setValue(angle) accordingly
-        this.setValue(1 - this.angle / Math.PI) ; // Normalize the angle to a value between 0.0 and 1.0
+        //this.setValue() ; // Normalize the angle to a value between 0.0 and 1.0
         // roud if needed
         // this.value = Math.round( this.value * 10000) / 10000;
 
         
         // Holder coordinates
-        const endX = baseX + lineLength * Math.cos(angle);
-        const endY = baseY - lineLength * Math.sin(angle);
+        const endX = x0 + lineLength * Math.cos(this.#angle);
+        const endY = y0 - lineLength * Math.sin(this.#angle);
 
         // Clear the canvas  
         ctx.clearRect(0, 0, size, size);
 
         // Draw the line
         ctx.beginPath();
-        ctx.moveTo(baseX, baseY);
+        ctx.moveTo(x0, y0);
         ctx.lineTo(endX, endY);
         ctx.strokeStyle = 'black';
         ctx.lineWidth = 2;
@@ -200,23 +244,23 @@ class LeverControl {
         ctx.stroke();
 
         //Mark
-                // Draw the small circle at the top of the line
+        // Draw the small circle at the top of the line
         ctx.beginPath();
-        ctx.arc(baseX, baseY, 10, 0, 2 * Math.PI);
+        ctx.arc(x0, y0, 10, 0, 2 * Math.PI);
         ctx.fillStyle = 'yellow';
         ctx.fill();
         
 
         // Display percentage
-        const percentage = Math.round(100 -(this.angle / Math.PI) * 100); // проценты от 180 градусов
+        const percentage = Math.round(100 -(this.#angle / Math.PI) * 100); // проценты от 180 градусов
         ctx.font = '16px Arial';
         ctx.fillStyle = 'black';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         //Procent
-        ctx.fillText(`${percentage}%`, baseX, baseY/2 + 16/2); // выводим проценты в центре
+        ctx.fillText(`${percentage}%`, x0, y0 /2 + 16/2); // выводим проценты в центре
         // Show Value
-        // ctx.fillText(`val = ${this.value}`, baseX, baseY/2 - 18); 
+        ctx.fillText(`val = ${Math.abs(this.#value*10000)/10000}`, x0, y0/2 - 18); 
     }
 
 }

@@ -49,6 +49,12 @@ document.addEventListener('DOMContentLoaded', () => {
         //console.log('Value updated to:', newValue);
     });
 
+        // Добавляем слушатель, который реагирует на изменение значения
+    lever3.addListener((newValue) => {
+        lever2.setValue(newValue);
+        //console.log('Value updated to:', newValue);
+    });
+
     // // Example of accessing lever values
     // setInterval(() => {
     //     console.log('Lever 1 Value:', lever1.getValue());
