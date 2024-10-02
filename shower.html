@@ -45,13 +45,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Добавляем слушатель, который реагирует на изменение значения
     lever2.addListener((newValue) => {
-        lever3.setValue(newValue);
+        lever3.setValueBypassingListener(newValue);
         //console.log('Value updated to:', newValue);
     });
 
         // Добавляем слушатель, который реагирует на изменение значения
     lever3.addListener((newValue) => {
-        lever2.setValue(newValue);
+        lever2.setValueBypassingListener(newValue);
         //console.log('Value updated to:', newValue);
     });
 

@@ -78,6 +78,7 @@ class LeverControl {
         this.y0 = this.size / 2;
         this.dragging = false;
         this.listeners = [];
+        this.isListenerOn = false;
 
         // Привязанные функции сохраняем сразу, чтобы избежать повторного `bind`
         this.#onMouseMoveHandler = this.#onMouseMove.bind(this);
@@ -112,23 +113,40 @@ class LeverControl {
 
     // Приватный метод для установки угла
     #setAngle(angle) {
-        this.#angle = Math.max(0, Math.min(angle, Math.PI));
+        if(0 <= angle && angle <= Math.PI) {
+            this.#angle = angle
+            }
+            else if(-Math.PI/2 < angle && angle < 0  ) {
+                this.#angle = 0;
+            }
+            else 
+                this.#angle = Math.PI;
         this.#setValueInternal(1 - this.#angle / Math.PI);
-        this.draw();
+
     }
 
     // Приватный метод для обновления значения
     #setValueInternal(newValue) {
         if (this.#value !== newValue) {
             this.#value = newValue;
-            this.notifyListeners();
+            if(this.isListenerOn){
+                this.notifyListeners();
+            }
+            else{
+                this.isListenerOn = true;
+            }
             this.draw();
         }
     }
 
     // Публичный метод для установки значения
     setValue(newValue) {
-        this.#setAngle((1 - newValue) * Math.PI);
+        this.#setAngle( (1 - newValue) * Math.PI );
+    }
+    //Assign valuew  avoiding ping pong 
+    setValueBypassingListener(newValue){
+        this.isListenerOn = false;
+        this.setValue(newValue);
     }
 
     // Получение значения
