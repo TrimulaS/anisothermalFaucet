@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moving Rectangles</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="leverContainer1"></div>
+    <div id="leverContainer2"></div>
+    <div id="leverContainer3"></div>
+
+    <!-- <script src="js/LeverControl.js"></script> -->
+
+
+
+
+
+<input type="checkbox" id="startAnimation"> Start Animation
+<canvas id="myCanvas" width="400" height="240"></canvas>
+<div id = 'colorController'></div>
+<div id = 'widthController'></div>
+<div id = 'canvas'></div>
+
+
+<script src="shower_files/leverControl.js"></script>
+<script src="shower_files/fallingJet.js"></script>    
+<script>
+
+// Example of creating multiple lever controls on a page
+document.addEventListener('DOMContentLoaded', () => {
+    const container1 = document.getElementById('leverContainer1');
+    const container2 = document.getElementById('leverContainer2');
+    const container3 = document.getElementById('leverContainer3');
+
+    const lever1 = new LeverControl(container1);
+    const lever2 = new LeverControl(container2);
+    const lever3 = new LeverControl(container3);
+
+    // Добавляем слушатель, который реагирует на изменение значения
+    lever2.addListener((newValue) => {
+        lever3.setValue(newValue);
+        //console.log('Value updated to:', newValue);
+    });
+
+    // // Example of accessing lever values
+    // setInterval(() => {
+    //     console.log('Lever 1 Value:', lever1.getValue());
+    //     console.log('Lever 2 Value:', lever2.getValue()*100);
+    //     console.log('Lever 3 Value:', lever3.getValue());
+    // }, 1000);
+});
+
+  
+
+</script>
+
+</body>
+</html>

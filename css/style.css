@@ -1,0 +1,22 @@
+.canvas-container {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+
+.jet-canvas {
+    width: 200px;
+    height: 400px;
+    background-color: lightgray;
+}
+
+.controls {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 10px;
+}
+
+label {
+    font-family: Arial, sans-serif;
+    margin-left: 20px;
+}
