@@ -1,9 +1,11 @@
 // draw initial value
 
+
 class LeverControl {
     static #scrollDelta = 2;   // in degrees
     static #counter = 0;
     #id = -1;
+    #progressPadding = 2;
     
     #value = 0.0; // Initial value from 0.0 to 1.0
     #angle = Math.PI; // initial angle (in radians)
@@ -66,9 +68,10 @@ class LeverControl {
     }
     
     
-    constructor (container, value = -1, title = "", size = 150) {
+    constructor (container, value = -1, title = "", progressColor = "", size = 150) {
         this.title = title;
         //this.value = value;
+        this.progressColor = progressColor;
         this.size = size;
         this.container = container;
         this.canvas = document.createElement('canvas');
@@ -166,12 +169,22 @@ class LeverControl {
 
     // Рендеринг элемента управления
     draw() {
-        const { ctx, x0, y0, lineLength, circleRadius, size } = this;
+        const { ctx, x0, y0, lineLength, circleRadius, size, canvas } = this;
 
         const endX = x0 + lineLength * Math.cos(this.#angle);
         const endY = y0 - lineLength * Math.sin(this.#angle);
 
-        ctx.clearRect(0, 0, size, size);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                //draw progress inside if color defined
+        if(this.progressColor!=""){
+            ctx.fillStyle = this.progressColor;
+            // Расчет высоты прямоугольника
+            const height = canvas.height * this.#value;
+            const p = this.#progressPadding
+            ctx.fillRect(0 + p, canvas.height - height + p, size - 2*p, height - 2*p);
+
+        }
 
         // Линия
         ctx.beginPath();
@@ -188,7 +201,7 @@ class LeverControl {
         ctx.fill();
         ctx.stroke();
 
-        // Центральный круг
+        // Центральный круг (axis)
         ctx.beginPath();
         ctx.arc(x0, y0, 10, 0, 2 * Math.PI);
         ctx.fillStyle = 'yellow';
