@@ -1,3 +1,5 @@
+// draw initial value
+
 class LeverControl {
     static #scrollDelta = 2;   // in degrees
     static #counter = 0;
@@ -64,7 +66,9 @@ class LeverControl {
     }
     
     
-    constructor(container, size = 150) {
+    constructor (container, value, title = "" , size = 150) {
+        this.title = title;
+        //this.value = value;
         this.size = size;
         this.container = container;
         this.canvas = document.createElement('canvas');
@@ -89,6 +93,7 @@ class LeverControl {
         this.#id = LeverControl.#counter;
 
         this.init();
+        this.setValue(value);
     }
     // Инициализация события
     init() {
@@ -189,7 +194,17 @@ class LeverControl {
         ctx.font = '16px Arial';
         ctx.fillStyle = 'black';
         ctx.textAlign = 'center';
-        ctx.fillText(`${percentage}%`, x0, y0 / 2 + 16 / 2);
-        ctx.fillText(`val = ${Math.abs(this.#value * 10000) / 10000}`, x0, y0 / 2 - 18);
+        if(this.title != "") { 
+            ctx.fillText(`${this.title}` , x0, y0 / 2 - 18);
+            ctx.fillText(`${percentage}%`, x0, y0 / 2 + 16 / 2);
+        }
+        else {
+            ctx.fillText(`${percentage}%`, x0, y0 / 2 - 18);
+            ctx.fillText(`val = ${Math.round(this.#value * 10000) / 10000}`, x0, y0 / 2 + 16 / 2);
+            
+        }
+        
+        
+        
     }
 }

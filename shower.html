@@ -11,22 +11,31 @@
     </style>
 </head>
 <body>
+    <div style="display: flex;">
+        <div id="leverContainer1"></div>
+        <div id="leverContainer2"></div>
+        <div id="leverContainer3"></div>
+    </div>
+    
+    <div style="display: flex;">
+        <div id="divColor"></div>
+        <div id="divSpeed"></div>
+        <div id="divThickness"></div>
+    </div>
+ 
 
-    <div id="leverContainer1"></div>
-    <div id="leverContainer2"></div>
-    <div id="leverContainer3"></div>
-
-    <!-- <script src="js/LeverControl.js"></script> -->
 
 
 
-
-
-<input type="checkbox" id="startAnimation"> Start Animation
-<canvas id="myCanvas" width="400" height="240"></canvas>
-<div id = 'colorController'></div>
-<div id = 'widthController'></div>
-<div id = 'canvas'></div>
+<!-- Water -->
+    <div style = "display: flex;    flex-direction: column; ">
+        <div>
+            <input type="checkbox" id="startAnimation"> Start Animation
+        </div>
+        <div>
+            <canvas id="canvasWater" width="400" height="600"></canvas>
+        </div>
+   </div>
 
 
 <script src="shower_files/leverControl.js"></script>
@@ -54,6 +63,77 @@ document.addEventListener('DOMContentLoaded', () => {
         lever2.setValueBypassingListener(newValue);
         //console.log('Value updated to:', newValue);
     });
+
+
+    // Jets:
+
+    const divColor = document.getElementById('divColor');
+    const divSpeed = document.getElementById('divSpeed');
+    const divThickness = document.getElementById('divThickness');
+
+    const lcColor = new LeverControl(divColor, 'rgb(255,0,0)', "Color");
+    const lcSpeed = new LeverControl(divSpeed, 1, "Speed");
+    const lcThickness = new LeverControl(divThickness, 3,  "Thikness");
+    
+
+
+
+    
+    const canvasWater = document.getElementById('canvasWater');
+    const jets = [];
+    const numOfJets = 20;
+    for (let i=0; i < numOfJets; i++){
+        jets.push (new WaterJet(canvasWater, i * 15, 0));
+    }
+    // const jet1 = new WaterJet(canvasWater, 50, 0);
+    // const jet2 = new WaterJet(canvasWater, 100, 0);
+
+    // Старт анимации
+    // jet1.start();
+    // jet2.start();
+
+    // Обработчик для чекбокса
+    const checkbox = document.getElementById('startAnimation');
+    checkbox.addEventListener('change', (e) => {
+        if (checkbox.checked) {         //or e.target.checked;
+            checkbox.style.backgroundColor = 'blue'; // Change the background color to blue when checked
+            // jet1.start();
+            // jet2.start();
+            for (let i=0; i<numOfJets; i++){
+                jets[i].start();
+            }
+        } else {
+            checkbox.style.backgroundColor = 'yellow'; // Reset the background color to white when unchecked
+            // jet1.stop();
+            // jet2.stop();
+            for (let i=0; i<numOfJets; i++){
+                jets[i].stop();
+            }
+        }
+
+        lcThickness.addListener((newValue) => {
+            for (let i=0; i<numOfJets; i++){
+                jets[i].setWidth(newValue * 15);
+            }
+        });
+        
+        lcSpeed.addListener((newValue) => {
+            for (let i=0; i<numOfJets; i++){
+                jets[i].setSpeed(newValue * 10);
+            }
+            });
+        });
+
+        lcColor.addListener((newValue) => {
+            for (let i=0; i<numOfJets; i++){
+                const red = Math.round(255 * (1 - newValue)); // уменьшение красного компонента
+                const blue = Math.round(255 * newValue);     // увеличение синего компонента
+                const color = `rgb(${red}, 0, ${blue})`;
+    
+                jets[i].setColor(color); // Пример применения цвета в объекте анимации
+            }
+        });
+
 
     // // Example of accessing lever values
     // setInterval(() => {
