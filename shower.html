@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Moving Rectangles</title>
+    <title>Shower</title>
     <style>
         canvas {
             border: 1px solid black;
@@ -33,7 +33,7 @@
             <input type="checkbox" id="startAnimation"> Start Animation
         </div>
         <div>
-            <canvas id="canvasWater" width="400" height="600"></canvas>
+            <canvas id="canvasWater" width="400" height="500"></canvas>
         </div>
    </div>
 
@@ -72,8 +72,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const divThickness = document.getElementById('divThickness');
 
     const lcColor = new LeverControl(divColor, 'rgb(255,0,0)', "Color");
-    const lcSpeed = new LeverControl(divSpeed, 1, "Speed");
-    const lcThickness = new LeverControl(divThickness, 3,  "Thikness");
+    const lcSpeed = new LeverControl(divSpeed, 0.5, "Speed");
+    const lcThickness = new LeverControl(divThickness, 0.3,  "Thikness");
     
 
 

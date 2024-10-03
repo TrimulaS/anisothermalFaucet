@@ -66,7 +66,7 @@ class LeverControl {
     }
     
     
-    constructor (container, value, title = "" , size = 150) {
+    constructor (container, value = -1, title = "", size = 150) {
         this.title = title;
         //this.value = value;
         this.size = size;
@@ -93,7 +93,12 @@ class LeverControl {
         this.#id = LeverControl.#counter;
 
         this.init();
-        this.setValue(value);
+        if(value==-1){
+            this.value = 0;
+        } else{
+            this.setValue(value);
+        }
+        
     }
     // Инициализация события
     init() {
