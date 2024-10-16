@@ -218,6 +218,7 @@ class LeverControl2D {
     }
     #setValue2Internal(newValue2) {
         if (this.#value2 !== newValue2) {
+            this.#radius = this.lineLength * newValue2;
             this.#value2 = newValue2;
             if(this.isListenerOn){
                 this.notifyListeners();
@@ -309,17 +310,19 @@ class LeverControl2D {
         ctx.fillStyle = 'black';
         ctx.textAlign = 'center';
 
-        const pos = Math.round(this.#value2 * 100) / 100;
+        const val2 = Math.round(this.#value2 * 100) / 100;
 
         if(this.title != "") {                               //If no title - than procent will be as title 
             ctx.fillText(`${this.title}` , x0, y0 / 2 - 18);
             ctx.fillText(`${percentage}%`, x0, y0 / 2 + 16 / 2);
-            ctx.fillText(`radius = ${pos}`, x0, y0 / 2 + 16 * 2);
+            ctx.fillText(`val2 = ${val2}`, x0, y0 / 2 + 16 * 2);
+            ctx.fillText(`radius = ${this.#radius}`, x0, y0 / 2 + 16 * 3);
         }
         else {
             ctx.fillText(`${percentage}%`, x0, y0 / 2 - 18);
             ctx.fillText(`val = ${Math.round(this.#value * 10000) / 10000}`, x0, y0 / 2 + 16 / 2);
-            ctx.fillText(`radius = ${pos}`, x0, y0 / 2 + 16 * 2);
+            ctx.fillText(`val2 = ${val2}`, x0, y0 / 2 + 16 * 2);
+            ctx.fillText(`radius = ${this.#radius}`, x0, y0 / 2 + 16 * 3);
             
         }
         
