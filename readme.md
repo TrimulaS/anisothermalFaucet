@@ -21,3 +21,5 @@ leverControl.js creates instances to control parameters:
 colorController: from red to blue
 widthController: 3..20
 speedController 3..20px per second![alt text]  (image.png)
+
+![image](https://github.com/user-attachments/assets/5bedea2f-e945-44ed-bd19-121d46a519f1)
