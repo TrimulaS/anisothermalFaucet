@@ -20,4 +20,4 @@ fallingJet.js - recieves chekbox and  return canvas with animated rectangle (rec
 leverControl.js creates instances to control parameters:
 colorController: from red to blue
 widthController: 3..20
-speedController 3..20px per second
+speedController 3..20px per second![alt text]  (image.png)
