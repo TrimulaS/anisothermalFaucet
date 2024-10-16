@@ -1,18 +1,55 @@
 // draw initial value
 
+/**
+ *  Value - is related to the angle
+ *  Value2 - is related to absoulute (positoin)
+ * 
+ *  Event chain:
+ * 
+ *  mouseDown -> add 'mousemove'
+ *					 'mouseup', 
+ *					 'mouseleave
+ *
+ * 
+ *  mouseMove() ->   			#setAngle()
+ *                  			this.position 
+ * 
+ *  #onMouseWheel(e) ->        #setAngle()
+ *                             this.position 
+ * 
+ *  #setAngle(angle)    ->     #setValueInternal(newValue) 
+ *  Check angle values      	
+ * 
+	 #setValueInternal(newValue) -> 	 notifyListeners();
+										draw();
 
-class LeverControl {
-    static #scrollDelta = 2;   // in degrees
+	 
+ *	 setValue(newValue)	-> #setAngle()
+	setValue2(newValue2) -> 
+ 
+ */
+
+
+class LeverControl2D {
+    static #scrollDeltaAngle = 2;   // in degrees
+    static #scrollDeltaRadius = 0.02;   
     static #counter = 0;
     #id = -1;
     #progressPadding = 2;
     
-    #value = 0.0; // Initial value from 0.0 to 1.0
+    #value = 0.0; // Initial value from 0.0 to 1.0   -  related to angle
     #angle = Math.PI; // initial angle (in radians)
+
+    #value2 = 0.0; // Initial value from 0.0 to 1.0     - related to radius-vector
+    #radius = 1.0;
+    #handleX = 0;
+    #handleY = 0;
+
     #onMouseMoveHandler;
     #onMouseUpHandler;
     #onMouseLeaveHandler;
     
+
 
 
     // Приватный метод для обработки нажатия мыши
@@ -22,10 +59,11 @@ class LeverControl {
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
 
-        const endX = x0 + lineLength * Math.cos(this.#angle);
-        const endY = y0 - lineLength * Math.sin(this.#angle);
 
-        const distance = Math.sqrt((mouseX - endX) ** 2 + (mouseY - endY) ** 2);
+        // const endX = x0 + lineLength * Math.cos(this.#angle);
+        // const endY = y0 - lineLength * Math.sin(this.#angle);
+
+        const distance = Math.sqrt((mouseX - this.#handleX) ** 2 + (mouseY - this.#handleY) ** 2);
         if (distance <= circleRadius) {
             this.dragging = true;
 
@@ -46,6 +84,7 @@ class LeverControl {
             const dx = mouseX - x0;
             const dy = y0 - mouseY;
 
+            this.#setRadius ( Math.sqrt(dx*dx + dy*dy) );
             this.#setAngle(Math.atan2(dy, dx));
         }
     }
@@ -53,8 +92,16 @@ class LeverControl {
     // Обработка колеса мыши
     #onMouseWheel(e) {
         e.preventDefault();
-        const angleChange = (LeverControl.#scrollDelta * Math.PI) / 180;
-        this.#setAngle(e.deltaY > 0 ? this.#angle - angleChange : this.#angle + angleChange);
+        if (e.ctrlKey) {
+            //Changeing radius vector
+            this.setValue2(this.#value2 + LeverControl2D.#scrollDeltaRadius * Math.sign(e.deltaY));
+
+        }else{
+            // Changeing angle
+            const angleChange = (LeverControl2D.#scrollDeltaAngle * Math.PI) / 180;
+            this.#setAngle(e.deltaY > 0 ? this.#angle - angleChange : this.#angle + angleChange);
+        }
+
     }
 
     // Приватный метод для завершения перемещения
@@ -68,8 +115,10 @@ class LeverControl {
     
     }
     
-    
-    constructor (container, value = -1, title = "", progressColor = "", size = 150) {
+
+    //----------------------------------------------------------------------------------------------------Constructor
+
+    constructor (container, value = -1, value2 = -1, title = "", progressColor = "", size = 150) {
         this.title = title;
         //this.value = value;
         this.progressColor = progressColor;
@@ -93,14 +142,22 @@ class LeverControl {
         this.#onMouseUpHandler = this.#onMouseUp.bind(this);
         this.#onMouseLeaveHandler = this.#onMouseLeave.bind(this);
 
-        LeverControl.#counter++;
-        this.#id = LeverControl.#counter;
+        LeverControl2D.#counter++;
+        this.#id = LeverControl2D.#counter;
 
         this.init();
-        if(value==-1){
+        if(value ==-1){
             this.value = 0;
         } else{
             this.setValue(value);
+            
+        }
+
+        //TO DO: Define setValue
+        if(value2 ==-1){
+            this.value2 = 0;
+        } else{
+            this.setValue2(value2);
         }
         
     }
@@ -138,6 +195,13 @@ class LeverControl {
         this.#setValueInternal(1 - this.#angle / Math.PI);
 
     }
+    #setRadius(radius){
+        if(radius > this.lineLength || !radius  ) radius = this.lineLength;
+
+        this.#radius = radius;
+        const value = radius/this.lineLength;
+        this.#setValue2Internal(value);
+    }
 
     // Приватный метод для обновления значения
     #setValueInternal(newValue) {
@@ -152,11 +216,31 @@ class LeverControl {
             this.draw();
         }
     }
+    #setValue2Internal(newValue2) {
+        if (this.#value2 !== newValue2) {
+            this.#value2 = newValue2;
+            if(this.isListenerOn){
+                this.notifyListeners();
+            }
+            else{
+                this.isListenerOn = true;
+            }
+            this.draw();
+        }
+    }
 
     // Публичный метод для установки значения
     setValue(newValue) {
         this.#setAngle( (1 - newValue) * Math.PI );
     }
+    setValue2(newValue2) {
+        // Check if the new value is in ranges
+        if(newValue2 >= 0 && newValue2 <= 1){
+            this.#setValue2Internal(newValue2)
+        }
+
+    }
+
     //Assign valuew  avoiding ping pong 
     setValueBypassingListener(newValue){
         this.isListenerOn = false;
@@ -171,33 +255,43 @@ class LeverControl {
     // Рендеринг элемента управления
     draw() {
         const { ctx, x0, y0, lineLength, circleRadius, size, canvas, left } = this;
+    
+        
 
-        const endX = x0 + lineLength * Math.cos(this.#angle);
-        const endY = y0 - lineLength * Math.sin(this.#angle);
+        this.#handleX = x0 + this.#radius * Math.cos(this.#angle);
+        this.#handleY = y0 - this.#radius * Math.sin(this.#angle);
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                //draw progress inside if color defined
+        //draw progress inside if color defined
         if(this.progressColor!=""){
+            const p = this.#progressPadding;
+            
+
             ctx.fillStyle = this.progressColor;
             // Расчет высоты прямоугольника
             const height = canvas.height * this.#value;
-            const p = this.#progressPadding
-            ctx.fillRect(0 + p, canvas.height - height + p, size - 2*p, height - 2*p);
+
+            //Calculating narowing progress rectongle proportianllay to radius-vector value
+            
+            const width = size * this.#value2;
+            const leftShift = size * (1 - this.#value2) / 2;
+            console.log(`${width}  shift: ${leftShift}`);
+            ctx.fillRect(0 + p +leftShift, canvas.height - height + p, width - 2*p, height - 2*p);
 
         }
 
         // Линия
         ctx.beginPath();
         ctx.moveTo(x0, y0);
-        ctx.lineTo(endX, endY);
+        ctx.lineTo(this.#handleX, this.#handleY);
         ctx.strokeStyle = 'black';
         ctx.lineWidth = 2;
         ctx.stroke();
 
         // Малый круг в верхней точке линии
         ctx.beginPath();
-        ctx.arc(endX, endY, circleRadius, 0, 2 * Math.PI);
+        ctx.arc(this.#handleX, this.#handleY, circleRadius, 0, 2 * Math.PI);
         ctx.fillStyle = 'orange';
         ctx.fill();
         ctx.stroke();
@@ -208,19 +302,24 @@ class LeverControl {
         ctx.fillStyle = 'yellow';
         ctx.fill();
 
-        // Textes: Title and procent of progress
+        // Texts: Title and procent of progress
         //const rect = this.canvas.getBoundingClientRect();
         const percentage = Math.round(100 - (this.#angle / Math.PI) * 100);
         ctx.font = '16px Arial';
         ctx.fillStyle = 'black';
         ctx.textAlign = 'center';
+
+        const pos = Math.round(this.#value2 * 100) / 100;
+
         if(this.title != "") {                               //If no title - than procent will be as title 
             ctx.fillText(`${this.title}` , x0, y0 / 2 - 18);
             ctx.fillText(`${percentage}%`, x0, y0 / 2 + 16 / 2);
+            ctx.fillText(`radius = ${pos}`, x0, y0 / 2 + 16 * 2);
         }
         else {
             ctx.fillText(`${percentage}%`, x0, y0 / 2 - 18);
             ctx.fillText(`val = ${Math.round(this.#value * 10000) / 10000}`, x0, y0 / 2 + 16 / 2);
+            ctx.fillText(`radius = ${pos}`, x0, y0 / 2 + 16 * 2);
             
         }
         

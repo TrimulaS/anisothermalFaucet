@@ -37,9 +37,19 @@
         </div>
    </div>
 
+<!-- Faucet 2D -->
+<div style = "display: flex;    flex-direction: column; ">
+    <div id="leverContainer2D-1"></div>
+    <div id="leverContainer2D-2"></div>
+</div>
+
+
 
 <script src="shower_files/leverControl.js"></script>
-<script src="shower_files/fallingJet.js"></script>    
+<script src="shower_files/fallingJet.js"></script> 
+
+<script src="shower_files/leverControl2D.js"></script>
+
 <script>
 
 // Example of creating multiple lever controls on a page
@@ -51,6 +61,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const lever1 = new LeverControl(container1);
     const lever2 = new LeverControl(container2);
     const lever3 = new LeverControl(container3);
+
+    lever1.addListener((newValue) => {
+        const ammendement  = 0.00001
+        const r = Math.round( 255 * newValue );
+        const g = Math.round( 255 * newValue );
+        const b = Math.round( 255 * (1-newValue) );
+        const color = 'rgb('+ r + ','+ g +',' + b +')';
+        lever1.progressColor = color;
+        console.log('color: ' + color);
+    });
 
     // Добавляем слушатель, который реагирует на изменение значения
     lever2.addListener((newValue) => {
@@ -125,12 +145,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         lcColor.addListener((newValue) => {
-            for (let i=0; i<numOfJets; i++){
+            for (let i=0; i < numOfJets; i++){
                 const red = Math.round(255 * (1 - newValue)); // уменьшение красного компонента
                 const blue = Math.round(255 * newValue);     // увеличение синего компонента
                 const color = `rgb(${red}, 0, ${blue})`;
     
                 jets[i].setColor(color); // Пример применения цвета в объекте анимации
+                lcColor.progressColor = color;
             }
         });
 
@@ -143,7 +164,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // }, 1000);
 });
 
-  
+  //---------------------------------------- 2D
+
+  const container2D_1 = document.getElementById('leverContainer2D-1');
+  const lever2D_1 = new LeverControl2D(container2D_1, 0.5,0.5, "","",400);
+
+  const container2D_2 = document.getElementById('leverContainer2D-2');
+  const lever2D_2 = new LeverControl2D(container2D_1, 0.5,0.5, "2D Faucet",'gray',400);
 
 </script>
 
