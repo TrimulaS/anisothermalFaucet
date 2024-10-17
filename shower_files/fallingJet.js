@@ -32,8 +32,12 @@ class WaterJet {
     }
 
     // Остановка анимации
+    pause() {
+        this.isAnimated = false;
+    }
     stop() {
         this.isAnimated = false;
+        this.clear();
     }
 
     // Метод для создания нового прямоугольника
@@ -79,9 +83,7 @@ class WaterJet {
     // Рисование текущего состояния
     draw() {
         const { ctx, rectangles, left, levelUp, levelDown, width, color } = this;
-        //ctx.clearRect(left, levelUp, width, levelDown - levelUp);  // Очищаем только видимую область
-        ctx.clearRect(left - this.#overlap , levelUp - this.#overlap , /*this.#maxWidth*/width  + this.#overlap*2 , levelDown - levelUp + this.#overlap*2);  // Очищаем только видимую область
-
+        this.clear();
         rectangles.forEach(rect => {
             const visibleTop = Math.max(rect.y, levelUp);  // Видимая верхняя граница
             const visibleBottom = Math.min(rect.y + rect.length, levelDown);  // Видимая нижняя граница
@@ -91,6 +93,12 @@ class WaterJet {
                 ctx.fillRect(rect.x, visibleTop, width, visibleBottom - visibleTop);
             }
         });
+    }
+
+    clear(){
+        const { ctx, rectangles, left, levelUp, levelDown, width, color } = this;
+        //ctx.clearRect(left, levelUp, width, levelDown - levelUp);  // Очищаем только видимую область
+        ctx.clearRect(left - this.#overlap , levelUp - this.#overlap , /*this.#maxWidth*/ width  + this.#overlap*2 , levelDown - levelUp + this.#overlap*2);  // Очищаем только видимую область 
     }
 
     // Метод для изменения параметров во время работы

@@ -20,13 +20,13 @@
  *  #setAngle(angle)    ->     #setValueInternal(newValue) 
  *  Check angle values      	
  * 
-	 #setValueInternal(newValue) -> 	 notifyListeners();
-										draw();
-
-	 
+ *	 #setValueInternal(newValue) -> 	 notifyListeners();
+ *										draw();
+ *
+ *	 
  *	 setValue(newValue)	-> #setAngle()
-	setValue2(newValue2) -> 
- 
+ *	setValue2(newValue2) -> 
+ *
  */
 
 
@@ -48,8 +48,6 @@ class LeverControl2D {
     #onMouseMoveHandler;
     #onMouseUpHandler;
     #onMouseLeaveHandler;
-    
-
 
 
     // Приватный метод для обработки нажатия мыши
@@ -85,7 +83,7 @@ class LeverControl2D {
             const dy = y0 - mouseY;
 
             this.#setRadius ( Math.sqrt(dx*dx + dy*dy) );
-            this.#setAngle(Math.atan2(dy, dx));
+            this.#setAngle  (Math.atan2(dy, dx));
         }
     }
 
@@ -126,7 +124,7 @@ class LeverControl2D {
         this.container = container;
         this.canvas = document.createElement('canvas');
         this.canvas.width = this.size;
-        this.canvas.height = this.size / 1.5;
+        this.canvas.height = this.size / 1.7;
         this.ctx = this.canvas.getContext('2d');
         // Handle
         this.lineLength = this.size / 2.5;
@@ -179,7 +177,7 @@ class LeverControl2D {
 
     // Уведомление слушателей
     notifyListeners() {
-        this.listeners.forEach(listener => listener(this.#value));
+        this.listeners.forEach(listener => listener(this.#value, this.#value2));
     }
 
     // Приватный метод для установки угла
@@ -256,30 +254,30 @@ class LeverControl2D {
     // Рендеринг элемента управления
     draw() {
         const { ctx, x0, y0, lineLength, circleRadius, size, canvas, left } = this;
-    
-        
 
         this.#handleX = x0 + this.#radius * Math.cos(this.#angle);
         this.#handleY = y0 - this.#radius * Math.sin(this.#angle);
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        //draw progress inside if color defined
+        // Draw progress inside if color defined
+        // const progressHeight = this.#value;
+        // const progressWidth  = this.#value2;
+        const progressHeight = this.#value2;
+        const progressWidth  = 1;
+
         if(this.progressColor!=""){
             const p = this.#progressPadding;
-            
 
             ctx.fillStyle = this.progressColor;
             // Расчет высоты прямоугольника
-            const height = canvas.height * this.#value;
+            const height = canvas.height * progressHeight;
 
             //Calculating narowing progress rectongle proportianllay to radius-vector value
-            
-            const width = size * this.#value2;
-            const leftShift = size * (1 - this.#value2) / 2;
-            console.log(`${width}  shift: ${leftShift}`);
+            const width = size * progressWidth;
+            const leftShift = size * (1 - progressWidth) / 2;
+            // console.log(`${width}  shift: ${leftShift}`);
             ctx.fillRect(0 + p +leftShift, canvas.height - height + p, width - 2*p, height - 2*p);
-
         }
 
         // Линия
@@ -306,23 +304,48 @@ class LeverControl2D {
         // Texts: Title and procent of progress
         //const rect = this.canvas.getBoundingClientRect();
         const percentage = Math.round(100 - (this.#angle / Math.PI) * 100);
+        const rad  = Math.round(this.#radius * 100) / 100;
+        const val  = Math.round(this.#value  * 100) / 100;
+        const val2 = Math.round(this.#value2 * 100);
+
+        
         ctx.font = '16px Arial';
         ctx.fillStyle = 'black';
         ctx.textAlign = 'center';
 
-        const val2 = Math.round(this.#value2 * 100) / 100;
+        // ctx.shadowColor = 'white';
+        // ctx.shadowBlur = 40;
+        // ctx.shadowOffsetX = 0;
+        // ctx.shadowOffsetY = 0;
+
+        // ctx.webkit.text.stroke = '1px #FFFFFF'; /* Толщина и цвет обводки */
+        // ctx.text.stroke = '1px #FFFFFF'; /* Толщина и цвет обводки (стандартное свойство) */
+
+        ctx.strokeStyle = 'white';  // Цвет обводки
+        ctx.lineWidth = 3;          // Толщина обводки
+
+
 
         if(this.title != "") {                               //If no title - than procent will be as title 
-            ctx.fillText(`${this.title}` , x0, y0 / 2 - 18);
-            ctx.fillText(`${percentage}%`, x0, y0 / 2 + 16 / 2);
-            ctx.fillText(`val2 = ${val2}`, x0, y0 / 2 + 16 * 2);
-            ctx.fillText(`radius = ${this.#radius}`, x0, y0 / 2 + 16 * 3);
+
+            ctx.strokeText(`${this.title}`      , x0, y0 / 2 - 18);
+            ctx.fillText  (`${this.title}`      , x0, y0 / 2 - 18);
+
+            ctx.strokeText(`α : ${percentage}%` , x0, y0 / 2);
+            ctx.fillText  (`α : ${percentage}%` , x0, y0 / 2);
+
+            ctx.strokeText(`r : ${val2}%`       , x0, y0 / 2 + 18);
+            ctx.fillText  (`r : ${val2}%`       , x0, y0 / 2 + 18);
+
+            // ctx.strokeText(`radius = ${rad}`    , x0, y0 / 2 + 18 * 2);
+            // ctx.fillText  (`radius = ${rad}`    , x0, y0 / 2 + 18 * 2);
         }
         else {
-            ctx.fillText(`${percentage}%`, x0, y0 / 2 - 18);
-            ctx.fillText(`val = ${Math.round(this.#value * 10000) / 10000}`, x0, y0 / 2 + 16 / 2);
-            ctx.fillText(`val2 = ${val2}`, x0, y0 / 2 + 16 * 2);
-            ctx.fillText(`radius = ${this.#radius}`, x0, y0 / 2 + 16 * 3);
+            ctx.fillText(`α : ${percentage}%` , x0, y0 / 2 - 18);
+            ctx.fillText(`r : ${val2}%`       , x0, y0 / 2 + 16 * 2);
+            // ctx.fillText(`val = ${val}`    , x0, y0 / 2 + 16 / 2);
+            // ctx.fillText(`val2 = ${val2}`  , x0, y0 / 2 + 16 * 2);
+            // ctx.fillText(`radius = ${rad}` , x0, y0 / 2 + 16 * 3);
             
         }
         
